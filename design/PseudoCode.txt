@@ -10,7 +10,7 @@ float old_ave = 0.0;
 def thread_collect:
 	when(timelist is available):
 		timelist.add(resp_time);
-		
+
 def thread_autoscale:
 	run forever
 		wait for period;
@@ -29,4 +29,7 @@ def thread_autoscale:
 				else if (old_ave < lower_threshold and ave < lower_threshold):
 					host_amt -= upper_bound / ave;
 				scale(host_amt);
-	
+				
+def main:
+    launch(thread_collect);
+    launch(thread_autoscale);
