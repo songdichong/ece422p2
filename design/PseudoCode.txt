@@ -1,0 +1,32 @@
+// Note that theese thresholds, especially the lower threshold, entails that threads response time will never be at their experimental optimal average of 2-3 seconds,
+// but kept in an acceptable "slightly inefficient" response time of 5-10 seconds.
+upper_threshold = 7; // This is selected experimentally, as the upper threshold of average response time before rescaling occurs.
+lower_threshold = 4; // This is selected experimentally, as the lower threshold of average response time before rescaling occurs.
+period = 5; // 10 seconds is optimal, as it collects sufficient number of data, but does not run too fast or slow
+host_amt = 1;
+list timelist = [];
+float old_ave = 0.0;
+
+def thread_collect:
+	when(timelist is available):
+		timelist.add(resp_time);
+		
+def thread_autoscale:
+	run forever
+		wait for period;
+			if (timelist is not empty)
+				cleaned = [];
+				for (i in cleaned):
+					if i < 5*period:
+						cleaned.append(i)
+				if cleaned != []:
+					ave = average(cleaned)
+				else:			
+					ave = average(timelist);
+				clear(timelist);
+				if (old_ave > upper_threshold and ave > upper_threshold):
+					host_amt += ave / upper_bound;
+				else if (old_ave < lower_threshold and ave < lower_threshold):
+					host_amt -= upper_bound / ave;
+				scale(host_amt);
+	
